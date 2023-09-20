@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "ganache": "^7.9.1",
+    "solc": "^0.8.21",
+    "truffle": "^5.11.5"
+  }
+}
