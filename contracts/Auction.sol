@@ -64,10 +64,16 @@ contract Auction  {
     }
    
     function addBidder (uint256 _value, address payable addr) public ownable register{
-        require(bidders[msg.sender].isRegister,"le bidder ne doit pas etre inscrit");
+        require(!bidders[msg.sender].isRegister,"le bidder ne doit pas etre inscrit");
         Bidder memory newBidder = Bidder(_value, addr,true);
         bidders[msg.sender] = newBidder;
         bids.push(newBidder);
+    }
+    function getBiddersValue(address payable addr) external view  returns(uint256){
+        return(bidders[addr].Value);
+    } 
+    function getBiddersRegister(address payable addr) external view returns(bool){
+        return(bidders[addr].isRegister);
     }
     function bid(uint256 amount) public payable ownable AuctionTime isBidder ActionBeforeLastBid {
         require(amount > current_price, "le montant est trop faible");
