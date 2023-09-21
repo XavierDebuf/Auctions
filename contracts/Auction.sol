@@ -52,13 +52,13 @@ contract Auction  {
     }
     function TimeDuringRegister() public returns(uint256){
         start_register = block.timestamp;
-        return (start_register +3 minutes);
+        return (start_register +2 minutes);
     }
-    function TimeDuringAuction() public returns(uint256) {
+    function TimeDuringAuction() public register returns(uint256) {
         start_time = block.timestamp;
         return (start_time +5 minutes);
     }
-    function TimeBeforeSold() public returns(uint256) {
+    function TimeBeforeSold() public AuctionTime returns(uint256) {
         start_time = block.timestamp;
         return(start_time + 45 seconds);
     }
@@ -80,6 +80,17 @@ contract Auction  {
          bidders[msg.sender].Value=amount;
          current_price = amount;
     }
+    function getCurrentPrice() external view returns(uint256){
+        return (current_price);
+    }/*
+    function blockStart(uint256 time) external returns(uint256){
+        bloc= block.timestamp + time seconds;
+        return (bloc);
+    }
+    //
+    function blocKRegister () external{
+        TimeDuringRegister()+blockStart(1);
+    }*/
     function biggestBidder() public view isBidder returns(address payable) {
       uint max = 0;
       uint win = 0;

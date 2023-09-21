@@ -1,5 +1,5 @@
 const Auction = artifacts.require("Auction");
-
+const truffleAssert = require("truffle-assertions");
 /*
  * uncomment accounts to access the test accounts made available by the
  * Ethereum client
@@ -58,7 +58,47 @@ contract("Auction", (accounts) => {
             assert.include(error.message, "le bidder ne doit pas etre inscrit", "Erreur inattendue.");
           }
         });
-      });
+          it("devrait retourner le prix courant correspondant à la dernière enchère", async () => {
+            const auctionInstance = await Auction.deployed();
+            const bidderAddress3 = accounts[3];
+            const bidValue3 = web3.utils.toWei("5", "ether");
+            await auctionInstance.addBidder(bidValue3, bidderAddress3, { from: bidderAddress3 });
+            await auctionInstance.bid(bidValue3,{from: bidderAddress3});
+            const bidderValue = await auctionInstance.getBiddersValue(bidderAddress3, { from: bidderAddress3 });
+            const currentPrice = await auctionInstance.getCurrentPrice();
+            assert.equal(bidderValue, currentPrice, "L'enchérisseur n'a pas enchéri.");
+          });
+          it("devrait déclencher une exception require si l'encherisseur n'est pas inscrit", async () => {
+            const auctionInstance = await Auction.deployed();
+            const invalidXValue = accounts[4];
+            await truffleAssert.reverts(
+              auctionInstance.bid(3,{from: invalidXValue}),
+                "le bidder doit etre inscrit"
+              );
+            });
+            it("devrait déclencher une exception require si l'encherisseur qui s'incrit est le propriétaire du contrat", async () => {
+              const auctionInstance = await Auction.deployed();
+              const bidderAddress0 = accounts[0];
+              const bidValue0 = web3.utils.toWei("7", "ether");
+
+              await truffleAssert.reverts(
+                auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
+                  "le payeur est le proprietaire"
+              );
+            });
+              it("devrait déclencher une validation require si l'encherisseur veut s'incrire dans les temps", async () => {
+                const auctionInstance = await Auction.deployed();
+                const bidderAddress0 = accounts[4];
+                const bidValue0 = web3.utils.toWei("7", "ether");
+                
+                await truffleAssert.passes(
+                  
+                  auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
+                  "Les inscriptions sont terminees"
+                );
+               
+        });
+  });
 
 
 //describe comes from Mocha framework
