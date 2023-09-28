@@ -16,6 +16,9 @@ contract Auction  {
     }
     mapping (address => Bidder) bidders;
     Bidder[]  bids;
+    constructor() {
+        owner = payable (msg.sender);
+    }
     modifier ownable() {
         require(msg.sender != owner, "le payeur est le proprietaire");
         _;
@@ -63,7 +66,7 @@ contract Auction  {
         return(start_time + 45 seconds);
     }
    
-    function addBidder (uint256 _value, address payable addr) public ownable register{
+    function addBidder (uint256 _value, address payable addr) public ownable register {
         require(!bidders[msg.sender].isRegister,"le bidder ne doit pas etre inscrit");
         Bidder memory newBidder = Bidder(_value, addr,true);
         bidders[msg.sender] = newBidder;
@@ -82,7 +85,9 @@ contract Auction  {
     }
     function getCurrentPrice() external view returns(uint256){
         return (current_price);
-    }/*
+    }function setCurrentPrice(uint256 cp) external {
+       current_price = cp;
+           }/*
     function blockStart(uint256 time) external returns(uint256){
         bloc= block.timestamp + time seconds;
         return (bloc);
@@ -117,8 +122,9 @@ contract Auction  {
         if (current_price >= reserve_price) {
             owner.transfer(bidders[biggestBidder()].Value);
         }
-        refund();
         winner = biggestBidder();
         transfertOwnership();
+        refund();
+        
     }
 } 

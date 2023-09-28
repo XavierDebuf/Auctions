@@ -58,45 +58,57 @@ contract("Auction", (accounts) => {
             assert.include(error.message, "le bidder ne doit pas etre inscrit", "Erreur inattendue.");
           }
         });
-          it("devrait retourner le prix courant correspondant à la dernière enchère", async () => {
+        it("devrait retourner le prix courant correspondant à la dernière enchère", async () => {
+          const auctionInstance = await Auction.deployed();
+          const bidderAddress3 = accounts[3];
+          const bidValue3 = 5;
+          await auctionInstance.addBidder(bidValue3, bidderAddress3, { from: bidderAddress3 });
+          await auctionInstance.bid(bidValue3,{from: bidderAddress3});
+          const bidderValue = await auctionInstance.getBiddersValue(bidderAddress3, { from: bidderAddress3 });
+          const currentPrice = await auctionInstance.getCurrentPrice();
+          assert.equal(bidderValue.words[0], currentPrice.words[0], "L'enchérisseur n'a pas enchéri.");
+          assert.equal(bidderValue.words[1], currentPrice.words[1], "L'enchérisseur n'a pas enchéri.");
+          assert.equal(bidderValue.words[3], currentPrice.words[3], "L'enchérisseur n'a pas enchéri.");
+        });
+        it("devrait retourner un refus car le montant en cours est trop important par rapport à l'enchère du bidder", async () => {
             const auctionInstance = await Auction.deployed();
-            const bidderAddress3 = accounts[3];
-            const bidValue3 = web3.utils.toWei("5", "ether");
-            await auctionInstance.addBidder(bidValue3, bidderAddress3, { from: bidderAddress3 });
-            await auctionInstance.bid(bidValue3,{from: bidderAddress3});
-            const bidderValue = await auctionInstance.getBiddersValue(bidderAddress3, { from: bidderAddress3 });
-            const currentPrice = await auctionInstance.getCurrentPrice();
-            assert.equal(bidderValue, currentPrice, "L'enchérisseur n'a pas enchéri.");
-          });
-          it("devrait déclencher une exception require si l'encherisseur n'est pas inscrit", async () => {
-            const auctionInstance = await Auction.deployed();
-            const invalidXValue = accounts[4];
+            const bidderAddress3 = accounts[5];
+            const currentPrice = 6;
+            await auctionInstance.setCurrentPrice(currentPrice);
+            await auctionInstance.addBidder(5, bidderAddress3, { from: bidderAddress3 });
             await truffleAssert.reverts(
-              auctionInstance.bid(3,{from: invalidXValue}),
-                "le bidder doit etre inscrit"
+              auctionInstance.bid(5,{from: bidderAddress3}), 
+              "le montant est trop faible"
               );
-            });
-            it("devrait déclencher une exception require si l'encherisseur qui s'incrit est le propriétaire du contrat", async () => {
-              const auctionInstance = await Auction.deployed();
-              const bidderAddress0 = accounts[0];
-              const bidValue0 = web3.utils.toWei("7", "ether");
-
-              await truffleAssert.reverts(
-                auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
-                  "le payeur est le proprietaire"
-              );
-            });
-              it("devrait déclencher une validation require si l'encherisseur veut s'incrire dans les temps", async () => {
-                const auctionInstance = await Auction.deployed();
-                const bidderAddress0 = accounts[4];
-                const bidValue0 = web3.utils.toWei("7", "ether");
-                
-                await truffleAssert.passes(
-                  
-                  auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
-                  "Les inscriptions sont terminees"
-                );
-               
+        });
+        it("devrait déclencher une exception require si l'encherisseur n'est pas inscrit", async () => {
+          const auctionInstance = await Auction.deployed();
+          const invalidXValue = accounts[4];
+          await truffleAssert.reverts(
+            auctionInstance.bid(3,{from: invalidXValue}),
+              "le bidder doit etre inscrit"
+          );
+        });
+        it("devrait déclencher une exception require si l'encherisseur qui s'incrit est le propriétaire du contrat", async () => {
+          const auctionInstance = await Auction.deployed();
+          const bidderAddress0 = accounts[0];
+          const bidValue0 = 7;
+          
+          await truffleAssert.reverts(
+            auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
+              "le payeur est le proprietaire"
+          );
+        });
+        it("devrait déclencher une validation require si l'encherisseur veut s'incrire dans les temps", async () => {
+          const auctionInstance = await Auction.deployed();
+          const bidderAddress0 = accounts[4];
+          const bidValue0 = web3.utils.toWei("7", "ether");
+          
+          await truffleAssert.passes(
+            
+            auctionInstance.addBidder(bidValue0,bidderAddress0, {from: bidderAddress0}),
+            "Les inscriptions sont terminees"
+          );  
         });
   });
 
